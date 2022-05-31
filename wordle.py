@@ -1,6 +1,8 @@
 import time
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+from guess import *
+
 
 # EXAMPLE GUESSES:
 # DRUNK (R correct, N present, DUK incorrect)
@@ -13,6 +15,14 @@ from selenium.webdriver.common.keys import Keys
 # Filter the list of remaining words
 # Choose a word from the list for next guess
 
+ANSWERS = []
+
+
+def read_answers():
+    with open("answers.txt", "r") as f:
+        for line in f:
+            ANSWERS.append(line.strip())
+
 
 def connect():
     driver = webdriver.Chrome("/usr/local/bin/chromedriver")
@@ -21,15 +31,9 @@ def connect():
 
 
 def main():
+    read_answers()
     driver = connect()
-
-    game = driver.find_element_by_tag_name("body")
-    game.click()
-    time.sleep(1)
-    game.send_keys("crate")
-    game.send_keys(Keys.ENTER)
-    while True:
-        time.sleep(1)
+    guess(driver, ANSWERS)
 
 
 if __name__ == "__main__":
