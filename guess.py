@@ -15,12 +15,12 @@ def guess(driver, answers):
   # Retrieve info from the guess
   # Filter the list of remaining words
   # Choose a word from the list for next guess
-  info = {"absent": "", "correct": {}, "present": {}}
+  info = {"absent": "", "correct": {}, "present": {}, "duplicates": {}}
   for i in range(6):
     # pick random element from answers
     guess = random.choice(answers)
     # if i == 0:
-    #     guess = "iller"
+    #   guess = "shoos"
     try_guess(driver, guess)
     info = update_info(driver, info, guess)
     regex_list = set_regex(info)
@@ -52,7 +52,7 @@ def update_info(driver, info, guess):
   keyboard = game.find_element_by_css_selector("game-keyboard")
   keyboard_HTML = BeautifulSoup(
     driver.execute_script("return arguments[0].shadowRoot.innerHTML", keyboard),
-    åfeatures="html.parser",
+    features="html.parser",
   )
 
   for position, tile in enumerate(game_row_HTML.findAll("game-tile")):
@@ -63,11 +63,16 @@ def update_info(driver, info, guess):
       key = keyboard_HTML.find("button", {"data-key": letter})
       if key.attrs["data-state"] == "absent" and letter not in info["absent"]:
         info["absent"] += letter
+
+      # handling duplicate letters
       elif key.attrs["data-state"] == "present":
         if letter in info["present"]:
           info["present"][letter].append(position)
         else:
           info["present"][letter] = [position]
+      elif key.attrs["data-state"] == "correct":
+        if position not in info["correct"]:
+          info["duplicates"][letter] = [position]
 
     if status == "correct":
       info["correct"][position] = letter
@@ -80,12 +85,15 @@ def update_info(driver, info, guess):
       else:
         info["present"][letter] = [position]
 
+    print(info)
+
   return info
 
 
 def set_regex(info):
   regex_list = []
-  regex_list.append(re.compile("^[^" + info["absent"] + "]*$"))
+  if len(info["absent"]) > 0:
+    regex_list.append(re.compile("^[^" + info["absent"] + "]*$"))
 
   for position, letter in info["correct"].items():
     regex = ""
@@ -99,6 +107,16 @@ def set_regex(info):
   for letter, positions in info["present"].items():
     regex_list.append(re.compile("^.*" + letter + ".*$"))
 
+    for position in positions:
+      regex = ""
+      for i in range(5):
+        if i == position:
+          regex += "[^" + letter + "]"
+        else:
+          regex += "."
+      regex_list.append(re.compile(regex))
+  
+  for letter, positions in info["duplicates"].items():
     for position in positions:
       regex = ""
       for i in range(5):
