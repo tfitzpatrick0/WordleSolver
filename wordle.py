@@ -18,22 +18,22 @@ ANSWERS = []
 
 
 def read_answers():
-    with open("answers.txt", "r") as f:
-        for line in f:
-            ANSWERS.append(line.strip())
+  with open("answers.txt", "r") as f:
+    for line in f:
+      ANSWERS.append(line.strip())
 
 
 def connect():
-    driver = webdriver.Chrome("/usr/local/bin/chromedriver")
-    driver.get("https://www.nytimes.com/games/wordle/index.html")
-    return driver
+  driver = webdriver.Chrome("/usr/local/bin/chromedriver")
+  driver.get("https://www.nytimes.com/games/wordle/index.html")
+  return driver
 
 
 def main():
-    read_answers()
-    driver = connect()
-    guess(driver, ANSWERS)
+  read_answers()
+  driver = connect()
+  guess(driver, ANSWERS)
 
 
 if __name__ == "__main__":
-    main()
+  main()
